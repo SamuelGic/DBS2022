@@ -15,8 +15,19 @@ def v1health():
         database="dota2",
         user=premenna['DBUSER'],
         password=premenna['DBPASS'])
+    kurzor = conn.cursor()
+    kurzor.execute("SELECT VERSION()")
+    vystup = kurzor.fetchone()
+    kurzor.execute("SELECT pg_database_size('dota2')/1024/1024 as dota2_db_size")
+    vystup2 = kurzor.fetchone()
+    jedna = {}
+    dva = {}
+    jedna['pgsql'] = dva
+    dva['version'] = vystup[0]
+    dva['dota2_db_size'] = vystup2[0]
+    daco = json.dumps(jedna)
 
-    return "Ahoj"
+    return daco
 
 
 @app.route('/hello', methods=['POST'])
