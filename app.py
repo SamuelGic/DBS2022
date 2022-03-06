@@ -9,12 +9,14 @@ import json
 
 @app.route('/v1/health', methods=['GET'])
 def v1health():
-   premenna = dotenv_values("/home")
+   """premenna = dotenv_values("/home")
    conn = pes.connect(
     host="localhost",
     database="suppliers",
     user=['DBUSER'],
-    password=['DBPASS'])
+    password=['DBPASS'])"""
+
+   return "Ahoj"
 
 
 @app.route('/hello', methods=['POST'])
