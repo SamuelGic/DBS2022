@@ -49,12 +49,12 @@ def v2():
         if act_patch is not None:
             match = {}
             match['match_id'] = riadok[3]
-            match['duration'] = riadok[4]
+            match['duration'] = float(riadok[4])
 
             act_patch['matches'].append(match)
         else:
             act_patch = {}
-            act_patch['patch_version'] = riadok[0]
+            act_patch['patch_version'] = str(riadok[0])
             act_patch['patch_start_date'] = riadok[1]
             act_patch['patch_end_date'] = riadok[2]
             act_patch['matches'] = []
@@ -63,10 +63,15 @@ def v2():
             if riadok[3] is not None and riadok[4] is not None:
                 match = {}
                 match['match_id'] = riadok[3]
-                match['duration'] = riadok[4]
+                match['duration'] = float(riadok[4])
                 act_patch['matches'].append(match)
 
     return json.dumps(vystup)
+
+
+@app.route('/v2/players/14944/game_exp/', methods=['GET']) #zadanie2
+def v2_2():
+    print()
 
 
 @app.route('/v1/health', methods=['GET']) #zadanie 1
