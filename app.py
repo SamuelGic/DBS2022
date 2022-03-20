@@ -22,17 +22,14 @@ def pripojenie_na_datab():
 @app.route('/v2/patches/', methods=['GET']) #zadanie2
 def v2():
     kurzor = pripojenie_na_datab()
-    kurzor.execute('SELECT patches.name as patch_version, '
-                   'extract(epoch FROM patches.release_date) as patch_start_date, '
-                   'extract(epoch FROM patch2.release_date) as patch_end_date, '
-                   'all_matches.match_id, all_matches.duration '
+    kurzor.execute('SELECT matches.id as match_id, duration, all_patches.patch_version, all_patches.patch_start_date, all_patches.patch_end_date '
+                   'FROM matches '
+                   'LEFT JOIN( '
+                   'SELECT patches.name as patch_version, extract(epoch FROM patches.release_date) as patch_start_date, extract(epoch FROM patch2.release_date) as patch_end_date '
                    'FROM patches '
                    'LEFT JOIN patches as patch2 on patches.id = patch2.id - 1 '
-                   'LEFT JOIN( '
-                   'SELECT matches.id as match_id, duration, start_time '
-                   'FROM matches '
-                   ') as all_matches on all_matches.start_time > extract(epoch FROM patches.release_date) and all_matches.start_time < COALESCE(extract(epoch FROM patch2.release_date), 9999999999) '
-                   'ORDER by patches.id')
+                   'ORDER by patches.id '
+                   ') as all_patches on matches.start_time > all_patches.patch_start_date and matches.start_time < COALESCE(all_patches.patch_end_date, 9999999999)')
 
     vystup = {}
     vystup['patches'] = []
@@ -53,15 +50,15 @@ def v2():
             act_patch['matches'].append(match)
         else:
             act_patch = {}
-            act_patch['patch_version'] = riadok[2]
-            act_patch['patch_start_date'] = riadok[3]
-            act_patch['patch_end_date'] = riadok[4]
+            act_patch['patch_version'] = riadok[0]
+            act_patch['patch_start_date'] = riadok[1]
+            act_patch['patch_end_date'] = riadok[2]
             act_patch['matches'] = []
             vystup['patches'].append(act_patch)
 
             match = {}
-            match['match_id'] = riadok[0]
-            match['duration'] = riadok[1]
+            match['match_id'] = riadok[3]
+            match['duration'] = riadok[4]
             act_patch['matches'].append(match)
 
     return json.dumps(vystup)
