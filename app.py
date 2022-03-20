@@ -38,14 +38,14 @@ def v2():
 
         for patch in vystup['patches']:
             if patch['patche_version'] == riadok[2]:
-                patch = True
+                act_patch = patch
                 break
 
         if act_patch is not None:
             match = {}
             match['match_id'] = riadok[0]
             match['duration'] = riadok[1]
-            patch['matches'].append(match)
+            act_patch['matches'].append(match)
 
         else:
             act_patch = {}
@@ -58,7 +58,7 @@ def v2():
             match = {}
             match['match_id'] = riadok[0]
             match['duration'] = riadok[1]
-            patch['matches'].append(match)
+            act_patch['matches'].append(match)
 
     return json.dumps(vystup)
 
