@@ -8,7 +8,7 @@ from dotenv import dotenv_values
 import json
 
 
-def pripojenie_na_datab(): #pripojenie na databazu
+def pripojenie(): #pripojenie na databazu
     premenna = dotenv_values("/home/peso.env")
     conn = pes.connect(
         host="147.175.150.216",
@@ -19,12 +19,13 @@ def pripojenie_na_datab(): #pripojenie na databazu
 
     return kurzor
 
+
 @app.route('/v2/patches/', methods=['GET']) #zadanie2 2v1
 def v2_1():
-    kurzor = pripojenie_na_datab()
+    kurzor = pripojenie()
     kurzor.execute('SELECT patches.name as patch_version, '
-                   'CAST( extract(epoch FROM patches.release_date) AS INT) as patch_start_date, '
-                   'CAST( extract(epoch FROM patch2.release_date) AS INT) as patch_end_date, '
+                   'CAST( extract(epoch FROM patches.release_date) as INT) as patch_start_date, '
+                   'CAST( extract(epoch FROM patch2.release_date) as INT) as patch_end_date, '
                    'all_matches.match_id, ROUND(all_matches.duration/60.0, 2) '
                    'FROM patches '
                    'LEFT JOIN patches as patch2 on patches.id = patch2.id - 1 '
@@ -71,7 +72,7 @@ def v2_1():
 
 @app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET'])
 def v2_game_exp(player_id):
-    kurzor = pripojenie_na_datab()
+    kurzor = pripojenie()
     kurzor.execute("SELECT COALESCE(nick, 'unknown') "
                    "FROM players "
                    "WHERE id = " + player_id)
@@ -80,28 +81,28 @@ def v2_game_exp(player_id):
     vystup['id'] = int(player_id)
     vystup['player_nick'] = kurzor.fetchone()[0]
 
-    kurzor.execute("SELECT vysledok.match_id, vysledok.h_name AS hero_localized_name, "
-                   "vysledok.min AS match_duration_minutes, vysledok.experiences_gained, "
+    kurzor.execute("SELECT vysledok.match_id, vysledok.h_name as hero_localized_name, "
+                   "vysledok.min as match_duration_minutes, vysledok.experiences_gained, "
                    "vysledok.level_gained, "
-                   "CASE WHEN side_played = 'radiant' AND vysledok.radiant_win = 'true' OR "
-                   "side_played = 'dire' AND vysledok.radiant_win = 'false' "
-                   "THEN true ELSE false END AS winner "
+                   "CASE WHEN side_played = 'radiant' and vysledok.radiant_win = 'true' OR "
+                   "side_played = 'dire' and vysledok.radiant_win = 'false' "
+                   "THEN true ELSE false END as winner "
                    "FROM ("
-                   "SELECT players.id AS pid, COALESCE(nick, 'unknown') AS player_nick, heroes.localized_name AS h_name, "
-                   "matches.id AS match_id, matches.duration, ROUND(matches.duration/60.0, 2) AS min, "
-                   "mpd.level AS level_gained, "
+                   "SELECT players.id as pid, COALESCE(nick, 'unknown') as player_nick, heroes.localized_name as h_name, "
+                   "matches.id as match_id, matches.duration, ROUND(matches.duration/60.0, 2) as min, "
+                   "mpd.level as level_gained, "
                    "COALESCE(mpd.xp_hero, 0) + COALESCE(mpd.xp_creep, 0) + "
-                   "COALESCE(mpd.xp_other, 0) + COALESCE(mpd.xp_roshan, 0) AS experiences_gained, "
+                   "COALESCE(mpd.xp_other, 0) + COALESCE(mpd.xp_roshan, 0) as experiences_gained, "
                    "mpd.player_slot, "
-                   "CASE WHEN mpd.player_slot < 5 THEN 'radiant' ELSE 'dire' END AS side_played, "
+                   "CASE WHEN mpd.player_slot < 5 THEN 'radiant' ELSE 'dire' END as side_played, "
                    "matches.radiant_win "
-                   "FROM matches_players_details AS mpd "
+                   "FROM matches_players_details as mpd "
                    "JOIN players ON players.id = mpd.player_id "
                    "JOIN heroes ON heroes.id = mpd.hero_id "
                    "JOIN matches ON matches.id = mpd.match_id "
                    "WHERE players.id = " + player_id +
                     " ORDER BY matches.id"
-                   ") AS vysledok")
+                   ") as vysledok")
 
     matches = []
 
@@ -123,16 +124,72 @@ def v2_game_exp(player_id):
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/14944/game_objectives/', methods=['GET']) #zadanie2 2v3
-def v2_3():
-    kurzor = pripojenie_na_datab()
-    kurzor.execute()
+@app.route('/v2/players/<string:player_id>/game_objectives/', methods=['GET'])
+def v2_game_objectives(player_id):
+
+    kurzor = pripojenie()
+    vystup = {}
+    vystup['id'] = int(player_id)
+
+    kurzor.execute("SELECT p.id, COALESCE(p.nick, 'unknown') AS player_nick, "
+                   "mpd.match_id, heroes.localized_name, "
+                   "COALESCE(game_objectives.subtype, 'NO_ACTION') "
+                   "FROM players AS p "
+                   "LEFT JOIN matches_players_details AS mpd ON mpd.player_id = p.id "
+                   "LEFT JOIN heroes ON heroes.id = mpd.hero_id "
+                   "LEFT JOIN game_objectives ON game_objectives.match_player_detail_id_1 = mpd.id "
+                   "WHERE p.id = " + player_id +
+                   " ORDER BY mpd.match_id, subtype")
+
+    matches = []
+
+    for row in kurzor:
+        if not 'player_nick' in vystup.keys():
+            vystup['player_nick'] = row[1]
+
+        actualny_match = None
+        for match in matches:
+            if match['match_id'] == row[2]:
+                act_match = match
+                break
+
+        if actualny_match is not None:
+            actualna_action = None
+            for action in actualny_match['actions']:
+                if action['hero_action'] == row[4]:
+                    actualna_action = action
+                    break
+
+            if actualna_action is not None:
+                actualna_action['count'] += 1
+            else:
+                act_action = {}
+                actualna_action['hero_action'] = row[4]
+                actualna_action['count'] = 1
+                actualna_action['actions'].append(act_action)
+
+        else:
+            actualny_match = {}
+            actualny_match['match_id'] = row[2]
+            actualny_match['hero_localized_name'] = row[3]
+            matches.append(actualny_match)
+
+            actualny_match['actions'] = []
+            action = {}
+            action['hero_action'] = row[4]
+            action['count'] = 1
+            actualny_match['actions'].append(action)
+
+    vystup['matches'] = matches
+    kurzor.close()
+
+    return json.dumps(vystup)
 
 
 @app.route('/v1/health', methods=['GET']) #zadanie 1
 def v1health():
 
-    kurzor = pripojenie_na_datab()
+    kurzor = pripojenie()
     kurzor.execute("SELECT VERSION()")
     vystup = kurzor.fetchone()
     kurzor.execute("SELECT pg_database_size('dota2')/1024/1024 as dota2_db_size")
