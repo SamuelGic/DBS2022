@@ -22,9 +22,9 @@ def pripojenie_na_datab():
 @app.route('/v2/patches/', methods=['GET']) #zadanie2
 def v2():
     kurzor = pripojenie_na_datab()
-    kurzor.execute('SELECT patches.name as patch_version,'
-                   'extract(epoch FROM patches.release_date) as patch_start_date, '
-                   'extract(epoch FROM patch2.release_date) as patch_end_date, '
+    kurzor.execute('SELECT patches.name as patch_version, '
+                   'CAST( extract(epoch FROM patches.release_date) AS INT) as patch_start_date, '
+                   'CAST( extract(epoch FROM patch2.release_date) AS INT) as patch_end_date, '
                    'all_matches.match_id, ROUND(all_matches.duration/60.0, 2) '
                    'FROM patches '
                    'LEFT JOIN patches as patch2 on patches.id = patch2.id - 1 '
