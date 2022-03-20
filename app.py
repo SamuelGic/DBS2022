@@ -38,14 +38,14 @@ def v2():
         act_patch = None
 
         for patch in vystup['patches']:
-            if patch['patch_version'] == str(riadok[2]):
+            if patch['patch_version'] == str(riadok[0]):
                 act_patch = patch
                 break
 
         if act_patch is not None:
             match = {}
-            match['match_id'] = riadok[0]
-            match['duration'] = riadok[1]
+            match['match_id'] = riadok[3]
+            match['duration'] = riadok[4]
 
             act_patch['matches'].append(match)
         else:
