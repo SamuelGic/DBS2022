@@ -22,16 +22,17 @@ def pripojenie_na_datab():
 @app.route('/v2/patches/', methods=['GET']) #zadanie2
 def v2():
     kurzor = pripojenie_na_datab()
-    kurzor.execute('SELECT patches.name as patch_version, '
+    kurzor.execute('SELECT patches.name as patch_version,'
                    'extract(epoch FROM patches.release_date) as patch_start_date, '
                    'extract(epoch FROM patch2.release_date) as patch_end_date, '
-                   'all_matches.match_id, all_matches.duration '
+                   'all_matches.match_id, ROUND(all_matches.duration/60.0, 2) '
                    'FROM patches '
                    'LEFT JOIN patches as patch2 on patches.id = patch2.id - 1 '
                    'LEFT JOIN( '
                    'SELECT matches.id as match_id, duration, start_time '
                    'FROM matches '
-                   ') as all_matches on all_matches.start_time > extract(epoch FROM patches.release_date) and all_matches.start_time < COALESCE(extract(epoch FROM patch2.release_date), 9999999999) '
+                   ') as all_matches on all_matches.start_time > extract(epoch FROM patches.release_date) '
+                   'and all_matches.start_time < COALESCE(extract(epoch FROM patch2.release_date), 9999999999) '
                    'ORDER by patches.id')
 
     vystup = {}
@@ -59,7 +60,7 @@ def v2():
             act_patch['matches'] = []
             vystup['patches'].append(act_patch)
 
-            if  riadok[3] is not None and riadok[4] is not None:
+            if riadok[3] is not None and riadok[4] is not None:
                 match = {}
                 match['match_id'] = riadok[3]
                 match['duration'] = riadok[4]
