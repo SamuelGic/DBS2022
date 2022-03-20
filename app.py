@@ -37,7 +37,7 @@ def v2():
         act_patch = None
 
         for patch in vystup['patches']:
-            if patch['patche_version'] == riadok[2]:
+            if patch['patche_version'] == str(riadok[2]):
                 act_patch = patch
                 break
 
@@ -50,8 +50,8 @@ def v2():
         else:
             act_patch = {}
             act_patch['patch_version'] = riadok[2]
-            act_patch['patch_start_date'] = riadok[2]
-            act_patch['patch_end_date'] = riadok[2]
+            act_patch['patch_start_date'] = riadok[3]
+            act_patch['patch_end_date'] = riadok[4]
             act_patch['matches'] = []
             vystup['patches'].append(act_patch)
 
