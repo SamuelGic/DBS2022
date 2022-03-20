@@ -70,8 +70,8 @@ def v2_1():
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET'])
-def v2_game_exp(player_id):
+@app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET'])#zadanie2 2v1
+def v2_2(player_id):
     kurzor = pripojenie()
     kurzor.execute("SELECT COALESCE(nick, 'unknown') "
                    "FROM players "
@@ -124,10 +124,10 @@ def v2_game_exp(player_id):
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/<string:player_id>/game_objectives/', methods=['GET'])
-def v2_game_objectives(player_id):
-
+@app.route('/v2/players/<string:player_id>/game_objectives/', methods=['GET'])#zadanie2 2v1
+def v2_3(player_id):
     kurzor = pripojenie()
+
     vystup = {}
     vystup['id'] = int(player_id)
 
@@ -143,44 +143,45 @@ def v2_game_objectives(player_id):
 
     matches = []
 
-    for row in kurzor:
+    for riadok in kurzor:
         if not 'player_nick' in vystup.keys():
-            vystup['player_nick'] = row[1]
+            vystup['player_nick'] = riadok[1]
 
-        actualny_match = None
+        aktulny_match = None
         for match in matches:
-            if match['match_id'] == row[2]:
-                actualny_match = match
+            if match['match_id'] == riadok[2]:
+                aktulny_match = match
                 break
 
-        if actualny_match is not None:
-            actualna_action = None
-            for action in actualny_match['actions']:
-                if action['hero_action'] == row[4]:
-                    actualna_action = action
+        if aktulny_match is not None:
+            aktualna_akcia = None
+            for akcia in aktulny_match['actions']:
+                if akcia['hero_action'] == riadok[4]:
+                    aktualna_akcia = akcia
                     break
 
-            if actualna_action is not None:
-                actualna_action['count'] += 1
+            if aktualna_akcia is not None:
+                aktualna_akcia['count'] += 1
             else:
-                actualna_action = {}
-                actualna_action['hero_action'] = row[4]
-                actualna_action['count'] = 1
-                actualna_action['actions'].append(actualna_action)
+                aktualna_akcia = {}
+                aktualna_akcia['hero_action'] = riadok[4]
+                aktualna_akcia['count'] = 1
+                aktulny_match['actions'].append(aktualna_akcia)
 
         else:
-            actualny_match = {}
-            actualny_match['match_id'] = row[2]
-            actualny_match['hero_localized_name'] = row[3]
-            matches.append(actualny_match)
+            aktulny_match = {}
+            aktulny_match['match_id'] = riadok[2]
+            aktulny_match['hero_localized_name'] = riadok[3]
+            matches.append(aktulny_match)
 
-            actualny_match['actions'] = []
-            action = {}
-            action['hero_action'] = row[4]
-            action['count'] = 1
-            actualny_match['actions'].append(action)
+            aktulny_match['actions'] = []
+            akcia = {}
+            akcia['hero_action'] = riadok[4]
+            akcia['count'] = 1
+            aktulny_match['actions'].append(akcia)
 
     vystup['matches'] = matches
+
     kurzor.close()
 
     return json.dumps(vystup)
