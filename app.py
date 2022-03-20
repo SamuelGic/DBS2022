@@ -22,14 +22,17 @@ def pripojenie_na_datab():
 @app.route('/v2/patches/', methods=['GET']) #zadanie2
 def v2():
     kurzor = pripojenie_na_datab()
-    kurzor.execute('SELECT matches.id as match_id, duration, all_patches.patch_version, all_patches.patch_start_date, all_patches.patch_end_date '
-                   'FROM matches ' 
-                   'LEFT JOIN( '
-                   'SELECT patches.name as patch_version, extract(epoch FROM patches.release_date) as patch_start_date, extract(epoch FROM patch2.release_date) as patch_end_date '
+    kurzor.execute('SELECT patches.name as patch_version, '
+                   'extract(epoch FROM patches.release_date) as patch_start_date, '
+                   'extract(epoch FROM patch2.release_date) as patch_end_date, '
+                   'all_matches.match_id, all_matches.duration '
                    'FROM patches '
                    'LEFT JOIN patches as patch2 on patches.id = patch2.id - 1 '
-                   'ORDER by patches.id '
-                   ') as all_patches on matches.start_time > all_patches.patch_start_date and matches.start_time < COALESCE(all_patches.patch_end_date, 9999999999)')
+                   'LEFT JOIN( '
+                   'SELECT matches.id as match_id, duration, start_time '
+                   'FROM matches '
+                   ') as all_matches on all_matches.start_time > extract(epoch FROM patches.release_date) and all_matches.start_time < COALESCE(extract(epoch FROM patch2.release_date), 9999999999) '
+                   'ORDER by patches.id')
 
     vystup = {}
     vystup['patches'] = []
