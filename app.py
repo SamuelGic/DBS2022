@@ -8,7 +8,7 @@ from dotenv import dotenv_values
 import json
 
 
-def pripojenie_na_datab():
+def pripojenie_na_datab(): #pripojenie na databazu
     premenna = dotenv_values("/home/peso.env")
     conn = pes.connect(
         host="147.175.150.216",
@@ -19,8 +19,8 @@ def pripojenie_na_datab():
 
     return kurzor
 
-@app.route('/v2/patches/', methods=['GET']) #zadanie2
-def v2():
+@app.route('/v2/patches/', methods=['GET']) #zadanie2 2v1
+def v2_1():
     kurzor = pripojenie_na_datab()
     kurzor.execute('SELECT patches.name as patch_version, '
                    'CAST( extract(epoch FROM patches.release_date) AS INT) as patch_start_date, '
@@ -69,9 +69,64 @@ def v2():
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/14944/game_exp/', methods=['GET']) #zadanie2
-def v2_2():
-    print()
+@app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET'])
+def v2_game_exp(player_id):
+    kurzor = pripojenie_na_datab()
+    kurzor.execute("SELECT COALESCE(nick, 'unknown') "
+                   "FROM players "
+                   "WHERE id = " + player_id)
+
+    vystup = {}
+    vystup['id'] = int(player_id)
+    vystup['player_nick'] = kurzor.fetchone()[0]
+
+    kurzor.execute("SELECT vysledok.match_id, vysledok.h_name AS hero_localized_name, "
+                   "vysledok.min AS match_duration_minutes, vysledok.experiences_gained, "
+                   "vysledok.level_gained, "
+                   "CASE WHEN side_played = 'radiant' AND vysledok.radiant_win = 'true' OR "
+                   "side_played = 'dire' AND vysledok.radiant_win = 'false' "
+                   "THEN true ELSE false END AS winner "
+                   "FROM ("
+                   "SELECT players.id AS pid, COALESCE(nick, 'unknown') AS player_nick, heroes.localized_name AS h_name, "
+                   "matches.id AS match_id, matches.duration, ROUND(matches.duration/60.0, 2) AS min, "
+                   "mpd.level AS level_gained, "
+                   "COALESCE(mpd.xp_hero, 0) + COALESCE(mpd.xp_creep, 0) + "
+                   "COALESCE(mpd.xp_other, 0) + COALESCE(mpd.xp_roshan, 0) AS experiences_gained, "
+                   "mpd.player_slot, "
+                   "CASE WHEN mpd.player_slot < 5 THEN 'radiant' ELSE 'dire' END AS side_played, "
+                   "matches.radiant_win "
+                   "FROM matches_players_details AS mpd "
+                   "JOIN players ON players.id = mpd.player_id "
+                   "JOIN heroes ON heroes.id = mpd.hero_id "
+                   "JOIN matches ON matches.id = mpd.match_id "
+                   "WHERE players.id = " + player_id +
+                    " ORDER BY matches.id"
+                   ") AS vysledok")
+
+    matches = []
+
+    for row in kurzor:
+        match = {}
+        match['match_id'] = row[0]
+        match['hero_localized_name'] = row[1]
+        match['match_duration_minutes'] = float(row[2])
+        match['experiences_gained'] = row[3]
+        match['level_gained'] = row[4]
+        match['winner'] = row[5]
+
+        matches.append(match)
+
+    vystup['matches'] = matches
+
+    kurzor.close()
+
+    return json.dumps(vystup)
+
+
+@app.route('/v2/players/14944/game_objectives/', methods=['GET']) #zadanie2 2v3
+def v2_3():
+    kurzor = pripojenie_na_datab()
+    kurzor.execute()
 
 
 @app.route('/v1/health', methods=['GET']) #zadanie 1
@@ -103,10 +158,12 @@ def hello():
        print('Request for hello page received with no name or blank name -- redirecting')
        return redirect(url_for('index'))
 
+
 @app.route('/')
 def index():
    print('Request for index page received')
    return render_template('index.html')
+
 
 if __name__ == '__main__':
    app.run()
