@@ -19,7 +19,7 @@ def pripojenie_na_datab():
 
     return kurzor
 
-@app.route('/v2/patches', methods=['GET']) #zadanie2
+@app.route('/v2/patches/', methods=['GET']) #zadanie2
 def v2():
     kurzor = pripojenie_na_datab()
     kurzor.execute('SELECT matches.id as match_id, duration, all_patches.patch_version, all_patches.patch_start_date, all_patches.patch_end_date '
@@ -33,11 +33,12 @@ def v2():
 
     vystup = {}
     vystup['patches'] = []
+
     for riadok in kurzor:
         act_patch = None
 
         for patch in vystup['patches']:
-            if patch['patche_version'] == str(riadok[2]):
+            if patch['patch_version'] == str(riadok[2]):
                 act_patch = patch
                 break
 
@@ -45,8 +46,8 @@ def v2():
             match = {}
             match['match_id'] = riadok[0]
             match['duration'] = riadok[1]
-            act_patch['matches'].append(match)
 
+            act_patch['matches'].append(match)
         else:
             act_patch = {}
             act_patch['patch_version'] = riadok[2]
