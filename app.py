@@ -56,10 +56,11 @@ def v2():
             act_patch['matches'] = []
             vystup['patches'].append(act_patch)
 
-            match = {}
-            match['match_id'] = riadok[3]
-            match['duration'] = riadok[4]
-            act_patch['matches'].append(match)
+            if  riadok[3] is not None and riadok[4] is not None:
+                match = {}
+                match['match_id'] = riadok[3]
+                match['duration'] = riadok[4]
+                act_patch['matches'].append(match)
 
     return json.dumps(vystup)
 
