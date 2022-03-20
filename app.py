@@ -150,7 +150,7 @@ def v2_game_objectives(player_id):
         actualny_match = None
         for match in matches:
             if match['match_id'] == row[2]:
-                act_match = match
+                actualny_match = match
                 break
 
         if actualny_match is not None:
@@ -163,10 +163,10 @@ def v2_game_objectives(player_id):
             if actualna_action is not None:
                 actualna_action['count'] += 1
             else:
-                act_action = {}
+                actualna_action = {}
                 actualna_action['hero_action'] = row[4]
                 actualna_action['count'] = 1
-                actualna_action['actions'].append(act_action)
+                actualna_action['actions'].append(actualna_action)
 
         else:
             actualny_match = {}
