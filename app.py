@@ -20,7 +20,7 @@ def pripojenie(): #pripojenie na databazu
     return kurzor
 
 
-@app.route('/v3/matches/<string:match_id>/top_purchaces/', methods=['GET'])
+@app.route('/v3/matches/<string:match_id>/top_purchases/', methods=['GET'])
 def v3_1(match_id):
     kurzor = pripojenie()
     kurzor.execute("SELECT ssub.hero_id, ssub.localized_name, ssub.item_count, ssub.item_id, ssub.item_name FROM "
