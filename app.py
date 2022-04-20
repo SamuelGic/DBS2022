@@ -40,10 +40,11 @@ def v3_1(match_id):
                     "ORDER BY mpd.hero_id, item_count DESC, it.name) AS sub "
                     "WHERE winner = true order by sub.hero_id, sub.item_count DESC, sub.item_name) AS ssub "
                     "WHERE ssub.r_num <= 5)")
-
+    vystup = {}
     for riadok in kurzor:
-        print(riadok)
+        vystup = riadok
 
+    return json.dumps(vystup)
 
 @app.route('/v2/patches/', methods=['GET']) # zadanie3 2v1
 def v2_1():
