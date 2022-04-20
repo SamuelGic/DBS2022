@@ -20,7 +20,32 @@ def pripojenie(): #pripojenie na databazu
     return kurzor
 
 
-@app.route('/v2/patches/', methods=['GET']) #zadanie2 2v1
+@app.route('/v3/matches/<string:match_id>/top_purchaces', methods=['GET'])
+def v3_1(match_id):
+    kurzor = pripojenie()
+    kurzor.execute("SELECT ssub.hero_id, ssub.localized_name, ssub.item_count, ssub.item_id, ssub.item_name FROM "
+                    "(SELECT sub.localized_name, sub.item_name, sub.hero_id, sub.item_id,"
+                    "sub.item_count, row_number() over (partition by sub.localized_name order by sub.hero_id, sub.item_count DESC, sub.item_name) as r_num "
+                    "FROM("
+                    "SELECT mpd.match_id, her.localized_name, her.id as hero_id, it.id as item_id,"
+                    "((mc.radiant_win AND mpd.player_slot <= 4) OR (not mc.radiant_win AND mpd.player_slot >= 128)) as winner, "
+                    "it.name AS item_name, count (it.name) as item_count "
+                    "FROM purchase_logs AS pl "
+                    "JOIN matches_players_details AS mpd ON mpd.id = pl.match_player_detail_id "
+                    "JOIN items AS it ON it.id = pl.item_id "
+                    "JOIN heroes AS her ON her.id = mpd.hero_id "
+                    "JOIN matches as mc on mc.id = mpd.match_id "
+                    "WHERE mc.id = " + match_id +
+                    "GROUP BY mpd.match_id, her.localized_name, item_name, mpd.hero_id, mc.radiant_win, winner, mpd.player_slot, her.id, it.id"
+                    "ORDER BY mpd.hero_id, item_count DESC, it.name) AS sub "
+                    "WHERE winner = true order by sub.hero_id, sub.item_count DESC, sub.item_name) AS ssub "
+                    "WHERE ssub.r_num <= 5)")
+
+    for riadok in kurzor:
+        print(riadok)
+
+
+@app.route('/v2/patches/', methods=['GET']) # zadanie3 2v1
 def v2_1():
     kurzor = pripojenie()
     kurzor.execute('SELECT patches.name as patch_version, '
@@ -70,7 +95,7 @@ def v2_1():
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET'])#zadanie2 2v1
+@app.route('/v2/players/<string:player_id>/game_exp/', methods=['GET']) #  2v1
 def v2_2(player_id):
     kurzor = pripojenie()
     kurzor.execute("SELECT COALESCE(nick, 'unknown') "
@@ -124,7 +149,7 @@ def v2_2(player_id):
     return json.dumps(vystup)
 
 
-@app.route('/v2/players/<string:player_id>/game_objectives/', methods=['GET'])#zadanie2 2v1
+@app.route('/v2/players/<string:player_id>/game_objectives/', methods=['GET']) # zadanie3 2v1
 def v2_3(player_id):
     kurzor = pripojenie()
 
@@ -187,7 +212,7 @@ def v2_3(player_id):
     return json.dumps(vystup)
 
 
-@app.route('/v1/health', methods=['GET']) #zadanie 1
+@app.route('/v1/health', methods=['GET']) # zadanie 2
 def v1health():
 
     kurzor = pripojenie()
