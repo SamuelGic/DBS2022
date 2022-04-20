@@ -27,16 +27,16 @@ def v3_1(match_id):
                     "(SELECT sub.localized_name, sub.item_name, sub.hero_id, sub.item_id,"
                     "sub.item_count, row_number() over (partition by sub.localized_name order by sub.hero_id, sub.item_count DESC, sub.item_name) as r_num "
                     "FROM("
-                    "SELECT mpd.match_id, her.localized_name, her.id as hero_id, it.id as item_id,"
-                    "((mc.radiant_win AND mpd.player_slot <= 4) OR (not mc.radiant_win AND mpd.player_slot >= 128)) as winner, "
+                    "SELECT mpd.match_id, hr.localized_name, hr.id as hero_id, it.id as item_id,"
+                    "((manchr.radiant_win AND mpd.player_slot <= 4) OR (not manchr.radiant_win AND mpd.player_slot >= 128)) as winner, "
                     "it.name AS item_name, count (it.name) as item_count "
                     "FROM purchase_logs AS pl "
                     "JOIN matches_players_details AS mpd ON mpd.id = pl.match_player_detail_id "
                     "JOIN items AS it ON it.id = pl.item_id "
-                    "JOIN heroes AS her ON her.id = mpd.hero_id "
-                    "JOIN matches as mc on mc.id = mpd.match_id "
-                    "WHERE mc.id = " + match_id +
-                    "GROUP BY mpd.match_id, her.localized_name, item_name, mpd.hero_id, mc.radiant_win, winner, mpd.player_slot, her.id, it.id"
+                    "JOIN heroes AS hr ON hr.id = mpd.hero_id "
+                    "JOIN matches as manchr on manchr.id = mpd.match_id "
+                    "WHERE manchr.id = " + match_id +
+                    "GROUP BY mpd.match_id, hr.localized_name, item_name, mpd.hero_id, manchr.radiant_win, winner, mpd.player_slot, hr.id, it.id"
                     "ORDER BY mpd.hero_id, item_count DESC, it.name) AS sub "
                     "WHERE winner = true order by sub.hero_id, sub.item_count DESC, sub.item_name) AS ssub "
                     "WHERE ssub.r_num <= 5)")
