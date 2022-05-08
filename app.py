@@ -1,12 +1,12 @@
-from crypt import methods
+import platform
 from datetime import datetime
-import os
-import sqlalchemy as sqlalchemy
-from flask import Flask, render_template, request, redirect, url_for, Response
-import psycopg2 as pes
+from flask import Flask, render_template, request, redirect, url_for
+import psycopg2 as psy
 from dotenv import dotenv_values
 import json
-from sqlalchemy import sql
+from flask import Response
+
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, Numeric, \
     SmallInteger, String, Table, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import TIMESTAMP
