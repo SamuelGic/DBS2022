@@ -1,6 +1,6 @@
 from crypt import methods
 from datetime import datetime
-
+import os
 import sqlalchemy as sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for, Response
 import psycopg2 as pes
@@ -272,9 +272,11 @@ metadata = Base.metadata
 
 daco_env = dotenv_values("/home/peso.env")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + daco_env['DBUSER'] + ':' + daco_env['DBPASS'] + '@147.175.150.216/dota2'
-
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + os.getenv('DBUSER') + ':' + os.getenv('DBPASS') + '@147.175.150.216/dota2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = sqlalchemy(app)
+db = SQLAlchemy(app)
+
+
 
 
 class Ability(db.Model):
