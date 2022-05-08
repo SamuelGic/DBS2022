@@ -3,9 +3,6 @@ from datetime import datetime
 
 import sqlalchemy as sqlalchemy
 from flask import Flask, render_template, request, redirect, url_for, Response
-
-app = Flask(__name__)
-
 import psycopg2 as pes
 from dotenv import dotenv_values
 import json
@@ -268,7 +265,7 @@ def orm_patches():
 
     return Response(json.dumps("fck"), status=200, mimetype="application/json")
 
-
+app = Flask(__name__)
 Base = declarative_base()
 metadata = Base.metadata
 
