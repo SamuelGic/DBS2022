@@ -1,11 +1,20 @@
 from crypt import methods
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for
+
+import sqlalchemy as sqlalchemy
+from flask import Flask, render_template, request, redirect, url_for, Response
+
 app = Flask(__name__)
 
 import psycopg2 as pes
 from dotenv import dotenv_values
 import json
+from sqlalchemy import sql
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, Numeric, \
+    SmallInteger, String, Table, Text, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import TIMESTAMP
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 
 
 def pripojenie(): #pripojenie na databazu
@@ -269,7 +278,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + daco_env['DBUSER'] + '
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = sqlalchemy(app)
-
 
 
 class Ability(db.Model):
