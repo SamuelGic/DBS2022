@@ -14,7 +14,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
-def pripojenie(): #pripojenie na databazu
+def pripojenie():  # pripojenie na databazu
     premenna = dotenv_values("/home/peso.env")
     conn = pes.connect(
         host="147.175.150.216",
@@ -26,31 +26,31 @@ def pripojenie(): #pripojenie na databazu
     return kurzor
 
 
-@app.route('/v3/matches/<string:match_id>/top_purchases/', methods=['GET'])
-def v3_1(match_id):
-    kurzor = pripojenie()
-    kurzor.execute("SELECT ssub.hero_id, ssub.localized_name, ssub.item_count, ssub.item_id, ssub.item_name FROM "
-                    "(SELECT sub.localized_name, sub.item_name, sub.hero_id, sub.item_id,"
-                    "sub.item_count, row_number() over (partition by sub.localized_name order by sub.hero_id, sub.item_count DESC, sub.item_name) as r_num "
-                    "FROM("
-                    "SELECT mpd.match_id, hr.localized_name, hr.id as hero_id, it.id as item_id,"
-                    "((manchr.radiant_win AND mpd.player_slot <= 4) OR (not manchr.radiant_win AND mpd.player_slot >= 128)) as winner, "
-                    "it.name AS item_name, count (it.name) as item_count "
-                    "FROM purchase_logs AS pl "
-                    "JOIN matches_players_details AS mpd ON mpd.id = pl.match_player_detail_id "
-                    "JOIN items AS it ON it.id = pl.item_id "
-                    "JOIN heroes AS hr ON hr.id = mpd.hero_id "
-                    "JOIN matches as manchr on manchr.id = mpd.match_id "
-                    "WHERE manchr.id = " + match_id +
-                    "GROUP BY mpd.match_id, hr.localized_name, item_name, mpd.hero_id, manchr.radiant_win, winner, mpd.player_slot, hr.id, it.id"
-                    "ORDER BY mpd.hero_id, item_count DESC, it.name) AS sub "
-                    "WHERE winner = true order by sub.hero_id, sub.item_count DESC, sub.item_name) AS ssub "
-                    "WHERE ssub.r_num <= 5)")
-    vystup = {}
-    for riadok in kurzor:
-        vystup = riadok
-
-    return json.dumps(vystup)
+#ng:match_id>/top_purchases/', methods=['GET'])
+#
+#
+#ub.hero_id, ssub.localized_name, ssub.item_count, ssub.item_id, ssub.item_name FROM "
+#ub.localized_name, sub.item_name, sub.hero_id, sub.item_id,"
+#count, row_number() over (partition by sub.localized_name order by sub.hero_id, sub.item_count DESC, sub.item_name) as r_num "
+#
+#d.match_id, hr.localized_name, hr.id as hero_id, it.id as item_id,"
+#radiant_win AND mpd.player_slot <= 4) OR (not manchr.radiant_win AND mpd.player_slot >= 128)) as winner, "
+#S item_name, count (it.name) as item_count "
+#hase_logs AS pl "
+#hes_players_details AS mpd ON mpd.id = pl.match_player_detail_id "
+#s AS it ON it.id = pl.item_id "
+#es AS hr ON hr.id = mpd.hero_id "
+#hes as manchr on manchr.id = mpd.match_id "
+#chr.id = " + match_id +
+#mpd.match_id, hr.localized_name, item_name, mpd.hero_id, manchr.radiant_win, winner, mpd.player_slot, hr.id, it.id"
+#mpd.hero_id, item_count DESC, it.name) AS sub "
+#ner = true order by sub.hero_id, sub.item_count DESC, sub.item_name) AS ssub "
+#b.r_num <= 5)")
+#
+#
+#
+#
+#
 
 
 @app.route('/v2/patches/', methods=['GET'])  # zadanie3 2v1
@@ -134,7 +134,7 @@ def v2_2(player_id):
                    "JOIN heroes ON heroes.id = mpd.hero_id "
                    "JOIN matches ON matches.id = mpd.match_id "
                    "WHERE players.id = " + player_id +
-                    " ORDER BY matches.id"
+                   " ORDER BY matches.id"
                    ") as vysledok")
 
     matches = []
@@ -222,7 +222,6 @@ def v2_3(player_id):
 
 @app.route('/v1/health', methods=['GET'])  # zadanie 2
 def v1health():
-
     kurzor = pripojenie()
     kurzor.execute("SELECT VERSION()")
     vystup = kurzor.fetchone()
@@ -240,20 +239,20 @@ def v1health():
 
 @app.route('/hello', methods=['POST'])
 def hello():
-   name = request.form.get('name')
+    name = request.form.get('name')
 
-   if name:
-       print('Request for hello page received with name=%s' % name)
-       return render_template('hello.html', name = name)
-   else:
-       print('Request for hello page received with no name or blank name -- redirecting')
-       return redirect(url_for('index'))
+    if name:
+        print('Request for hello page received with name=%s' % name)
+        return render_template('hello.html', name=name)
+    else:
+        print('Request for hello page received with no name or blank name -- redirecting')
+        return redirect(url_for('index'))
 
 
 @app.route('/')
 def index():
-   print('Request for index page received')
-   return render_template('index.html')
+    print('Request for index page received')
+    return render_template('index.html')
 
 
 @app.route('/v4/patches/', methods=['GET'])
@@ -261,22 +260,20 @@ def orm_patches():
     ab = Patch.query.all()
     for a in ab:
         print(a.id, a.duration)
-        #print()
+        # print()
 
     return Response(json.dumps("fck"), status=200, mimetype="application/json")
+
 
 app = Flask(__name__)
 Base = declarative_base()
 metadata = Base.metadata
 
-
 daco_env = dotenv_values("/home/peso.env")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + daco_env['DBUSER'] + ':' + daco_env['DBPASS'] + '@147.175.150.216/dota2'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + os.getenv('DBUSER') + ':' + os.getenv('DBPASS') + '@147.175.150.216/dota2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + daco_env['DBUSER'] + ':' + daco_env[
+    'DBPASS'] + '@147.175.150.216/dota2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
-
 
 
 class Ability(db.Model):
@@ -330,7 +327,8 @@ class DjangoContentType(db.Model):
 class DjangoMigration(db.Model):
     _tablename_ = 'django_migrations'
 
-    id = db.Column(db.BigInteger, primary_key=True, server_default=text("nextval('django_migrations_id_seq'::regclass)"))
+    id = db.Column(db.BigInteger, primary_key=True,
+                   server_default=text("nextval('django_migrations_id_seq'::regclass)"))
     app = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     applied = db.Column(db.DateTime(True), nullable=False)
@@ -420,7 +418,8 @@ class AuthPermission(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, server_default=text("nextval('auth_permission_id_seq'::regclass)"))
     name = db.Column(db.String(255), nullable=False)
-    content_type_id = db.Column(db.ForeignKey('django_content_type.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
+    content_type_id = db.Column(db.ForeignKey('django_content_type.id', deferrable=True, initially='DEFERRED'),
+                                nullable=False, index=True)
     codename = db.Column(db.String(100), nullable=False)
 
     content_type = db.relationship('DjangoContentType')
@@ -433,8 +432,10 @@ class AuthUserGroup(db.Model):
     )
 
     id = db.Column(db.BigInteger, primary_key=True, server_default=text("nextval('auth_user_groups_id_seq'::regclass)"))
-    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
-    group_id = db.Column(db.ForeignKey('auth_group.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
+    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False,
+                        index=True)
+    group_id = db.Column(db.ForeignKey('auth_group.id', deferrable=True, initially='DEFERRED'), nullable=False,
+                         index=True)
 
     group = db.relationship('AuthGroup')
     user = db.relationship('AuthUser')
@@ -452,8 +453,10 @@ class DjangoAdminLog(db.Model):
     object_repr = db.Column(db.String(200), nullable=False)
     action_flag = db.Column(db.SmallInteger, nullable=False)
     change_message = db.Column(db.Text, nullable=False)
-    content_type_id = db.Column(db.ForeignKey('django_content_type.id', deferrable=True, initially='DEFERRED'), index=True)
-    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
+    content_type_id = db.Column(db.ForeignKey('django_content_type.id', deferrable=True, initially='DEFERRED'),
+                                index=True)
+    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False,
+                        index=True)
 
     content_type = db.relationship('DjangoContentType')
     user = db.relationship('AuthUser')
@@ -498,9 +501,12 @@ class AuthGroupPermission(db.Model):
         UniqueConstraint('group_id', 'permission_id'),
     )
 
-    id = db.Column(db.BigInteger, primary_key=True, server_default=text("nextval('auth_group_permissions_id_seq'::regclass)"))
-    group_id = db.Column(db.ForeignKey('auth_group.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
-    permission_id = db.Column(db.ForeignKey('auth_permission.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
+    id = db.Column(db.BigInteger, primary_key=True,
+                   server_default=text("nextval('auth_group_permissions_id_seq'::regclass)"))
+    group_id = db.Column(db.ForeignKey('auth_group.id', deferrable=True, initially='DEFERRED'), nullable=False,
+                         index=True)
+    permission_id = db.Column(db.ForeignKey('auth_permission.id', deferrable=True, initially='DEFERRED'),
+                              nullable=False, index=True)
 
     group = db.relationship('AuthGroup')
     permission = db.relationship('AuthPermission')
@@ -512,9 +518,12 @@ class AuthUserUserPermission(db.Model):
         UniqueConstraint('user_id', 'permission_id'),
     )
 
-    id = db.Column(db.BigInteger, primary_key=True, server_default=text("nextval('auth_user_user_permissions_id_seq'::regclass)"))
-    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
-    permission_id = db.Column(db.ForeignKey('auth_permission.id', deferrable=True, initially='DEFERRED'), nullable=False, index=True)
+    id = db.Column(db.BigInteger, primary_key=True,
+                   server_default=text("nextval('auth_user_user_permissions_id_seq'::regclass)"))
+    user_id = db.Column(db.ForeignKey('auth_user.id', deferrable=True, initially='DEFERRED'), nullable=False,
+                        index=True)
+    permission_id = db.Column(db.ForeignKey('auth_permission.id', deferrable=True, initially='DEFERRED'),
+                              nullable=False, index=True)
 
     permission = db.relationship('AuthPermission')
     user = db.relationship('AuthUser')
@@ -526,7 +535,8 @@ class MatchesPlayersDetail(db.Model):
         Index('idx_match_id_player_id', 'match_id', 'player_slot', 'id'),
     )
 
-    id = db.Column(db.Integer, primary_key=True, server_default=text("nextval('matches_players_details_id_seq'::regclass)"))
+    id = db.Column(db.Integer, primary_key=True,
+                   server_default=text("nextval('matches_players_details_id_seq'::regclass)"))
     match_id = db.Column(db.ForeignKey('matches.id'))
     player_id = db.Column(db.ForeignKey('players.id'))
     hero_id = db.Column(db.ForeignKey('heroes.id'))
@@ -631,8 +641,10 @@ class GameObjective(db.Model):
     value = db.Column(db.Integer)
     slot = db.Column(db.Integer)
 
-    matches_players_detail = db.relationship('MatchesPlayersDetail', primaryjoin='GameObjective.match_player_detail_id_1 == MatchesPlayersDetail.id')
-    matches_players_detail1 = db.relationship('MatchesPlayersDetail', primaryjoin='GameObjective.match_player_detail_id_2 == MatchesPlayersDetail.id')
+    matches_players_detail = db.relationship('MatchesPlayersDetail',
+                                             primaryjoin='GameObjective.match_player_detail_id_1 == MatchesPlayersDetail.id')
+    matches_players_detail1 = db.relationship('MatchesPlayersDetail',
+                                              primaryjoin='GameObjective.match_player_detail_id_2 == MatchesPlayersDetail.id')
 
 
 class PlayerAction(db.Model):
@@ -715,4 +727,4 @@ class TeamfightsPlayer(db.Model):
 
 
 if __name__ == '__main__':
-   app.run()
+    app.run()
